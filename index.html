@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <style>body {
+    font-family: sans-serif;
+    display: grid;
+    height: 100vh;
+    place-items: center;
+  }
+  
+  .base-timer {
+    position: relative;
+    width: 300px;
+    height: 300px;
+  }
+  
+  .base-timer__svg {
+    transform: scaleX(-1);
+  }
+  
+  .base-timer__circle {
+    fill: none;
+    stroke: none;
+  }
+  
+  .base-timer__path-elapsed {
+    stroke-width: 7px;
+    stroke: grey;
+  }
+  
+  .base-timer__path-remaining {
+    stroke-width: 7px;
+    stroke-linecap: round;
+    transform: rotate(90deg);
+    transform-origin: center;
+    transition: 1s linear all;
+    fill-rule: nonzero;
+    stroke: currentColor;
+  }
+  
+  .base-timer__path-remaining.green {
+    color: rgb(65, 184, 131);
+  }
+  
+  .base-timer__path-remaining.orange {
+    color: orange;
+  }
+  
+  .base-timer__path-remaining.red {
+    color: red;
+  }
+  
+  .base-timer__label {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+  }
+  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- <link rel="icon" href="../../../../favicon.ico"> -->
+
+  <title>Nadishodhan Pranayam</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+
+
+  <!-- Custom styles for this template -->
+  <!-- <link href="narrow-jumbotron.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+  <div id="app"></div>
+  <div class="container">
+      
+
+    <div class="jumbotron"><h1 >Nadi Shodhan Pranayam By Chaitanya</h1>
+      
+      
+      
+    </div><div class="form-group" ><label>Select inhale </label><select onchange="changeinhale()" class="form-control" id="inhale"></select></div>
+
+    
+
+    <div class="form-group"><div class="form-group" onchange="changehold()" ><label>Select Hold </label><select class="form-control" id="hold"></select></div>
+    
+      
+    <div class="form-group" onchange="changeexhale()"><label>Select Exhale </label><select class="form-control" id="exhale"></select></div><br>
+    <div class="form-group"><div class="form-group" onchange="changeround()" ><label>Select Rounds </label><select class="form-control" id="Rounds"></select></div><br>
+
+    
+    <div style="float:left; 
+    /* background:Red; */
+    width:5%;
+    height:20px;"><p>Time -</div><div style="float:left; 
+      width:50%;
+      height: 20px;;" id="time">0:07</div>
+      <div id = second></div>
+    <!-- <button class="button" onclick="onTimesUp()">restart</button>
+      
+    <button class="button" onclick="startTimer()">startTimer</button> -->
+    <audio id="weldone" src="videoplayback.mp3"></audio>
+    <button type="button" onclick="start()" class="btn btn-outline-success">Start</button>
+
+    <button type="button" onclick="window.location.reload()" class="btn btn-outline-success">I can't do this</button>
+</body>
+<!-- <body onload="addList()"></body> -->
+<script>
+  function textToAudio(message) {
+    let msg = message;
+                    
+    let speech = new SpeechSynthesisUtterance();
+    speech.lang = "en-US";
+                    
+    speech.text = message;
+    speech.volume = 1;
+    speech.rate = 1;
+    speech.pitch = 1;
+                    
+    window.speechSynthesis.speak(speech);
+                }
+
+const FULL_DASH_ARRAY = 283;
+const WARNING_THRESHOLD = 10;
+const ALERT_THRESHOLD = 5;
+
+const COLOR_CODES = {
+  info: {
+    color: "green"
+  },
+  warning: {
+    color: "orange",
+    threshold: WARNING_THRESHOLD
+  },
+  alert: {
+    color: "red",
+    threshold: ALERT_THRESHOLD
+  }
+};
+
+var TIME_LIMIT;
+let timePassed = 0;
+let timeLeft = TIME_LIMIT;
+let timerInterval = null;
+let remainingPathColor = COLOR_CODES.info.color;
+
+document.getElementById("app").innerHTML = `
+<div class="base-timer">
+  <svg class="base-timer__svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <g class="base-timer__circle">
+      <circle class="base-timer__path-elapsed" cx="50" cy="50" r="45"></circle>
+      <path
+        id="base-timer-path-remaining"
+        stroke-dasharray="283"
+        class="base-timer__path-remaining ${remainingPathColor}"
+        d="
+          M 50, 50
+          m -45, 0
+          a 45,45 0 1,0 90,0
+          a 45,45 0 1,0 -90,0
+        "
+      ></path>
+    </g>
+  </svg>
+  <span id="base-timer-label" class="base-timer__label">${formatTime(
+    timeLeft
+  )}</span>
+</div>
+`;
+
+// startTimer();
+
+function onTimesUp() {
+  clearInterval(timerInterval);
+  audio = document.getElementById('weldone')
+  // audio.play()
+}
+
+function formatTime(time) {
+  const minutes = Math.floor(time / 60);
+  let seconds = time % 60;
+
+  if (seconds < 10) {
+    seconds = `0${seconds}`;
+  }
+
+  return `${minutes}:${seconds}`;
+}
+
+function setRemainingPathColor(timeLeft) {
+  const { alert, warning, info } = COLOR_CODES;
+  if (timeLeft <= alert.threshold) {
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.remove(warning.color);
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.add(alert.color);
+  } else if (timeLeft <= warning.threshold) {
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.remove(info.color);
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.add(warning.color);
+  }
+}
+
+function calculateTimeFraction() {
+  const rawTimeFraction = timeLeft / TIME_LIMIT;
+  return rawTimeFraction - (1 / TIME_LIMIT) * (1 - rawTimeFraction);
+}
+
+function setCircleDasharray() {
+  const circleDasharray = `${(
+    calculateTimeFraction() * FULL_DASH_ARRAY
+  ).toFixed(0)} 283`;
+  document
+    .getElementById("base-timer-path-remaining")
+    .setAttribute("stroke-dasharray", circleDasharray);
+
+  }
+  function format(time) {   
+    // Hours, minutes and seconds
+    var hrs = ~~(time / 3600);
+    var mins = ~~((time % 3600) / 60);
+    var secs = ~~time % 60;
+
+    // Output like "1:01" or "4:03:59" or "123:03:59"
+    var ret = "";
+    if (hrs > 0) {
+        ret += "" + hrs + ":" + (mins < 10 ? "0" : "");
+    }
+    ret += "" + mins + ":" + (secs < 10 ? "0" : "");
+    ret += "" + secs;
+    return ret;
+}
+  function addListtoinhale(){
+    var select = document.getElementById("inhale");
+    for(var i = 200; i >= 1; --i) {
+    var option = document.createElement('option');
+    option.text = option.value = i;
+    select.add(option, 0);
+      }
+      select.selectedIndex = 0
+     }
+
+
+  function addListtohold(){
+    var select = document.getElementById("hold");
+    for(var i = 200; i >= 1; --i) {
+    var option = document.createElement('option');
+    option.text = option.value = i;
+    select.add(option, 0);
+      }
+      select.selectedIndex = 3
+     }
+     function addListtoexhale(){
+    var select = document.getElementById("exhale");
+    for(var i = 200; i >= 1; --i) {
+    var option = document.createElement('option');
+    option.text = option.value = i;
+    select.add(option, 0);
+      }
+      select.selectedIndex = 1
+     }
+     function addListtoround(){
+    var select = document.getElementById("Rounds");
+    for(var i = 200; i >= 1; --i) {
+    var option = document.createElement('option');
+    option.text = option.value = i;
+    select.add(option, 0);
+      }
+      select.selectedIndex = 0
+     }
+  function changeinhale(){
+    // const form = document.getElementById('form')
+    // const treat = form['treat'].value;
+    var inhale = document.getElementById("inhale");
+    var inhaletext = Number(inhale.value);
+    var hold = document.getElementById("hold");
+    var holdtext = Number(hold.value);
+    var exhale = document.getElementById("exhale");
+    var exhaletext = Number(exhale.value);
+    var round = document.getElementById("Rounds");
+    var roundtext = Number(round);
+    var time = document.getElementById("time");
+    var second = document.getElementById("second");
+    var selectedInhale = inhale.options[inhale.selectedIndex].text;
+    var selectedHold = hold.options[hold.selectedIndex].text;
+    var selectedExhale = exhale.options[exhale.selectedIndex].text;
+    var selectedRound = round.options[round.selectedIndex].text;
+    hold.selectedIndex = selectedInhale*2*2-1
+    exhale.selectedIndex = selectedInhale*2-1
+    inhaletext = Number(selectedInhale)
+    holdtext = Number(selectedInhale)*2*2
+    exhaletext = Number(selectedInhale)*2
+    roundtext = Number(selectedRound)
+    var add = (inhaletext)+(holdtext)+(exhaletext)
+    
+    time.innerText = format(add*roundtext*2)
+    second.innerText = add*roundtext
+    TIME_LIMIT = inhaletext
+} 
+function changehold(){
+  var inhale = document.getElementById("inhale");
+    var inhaletext = Number(inhale.value);
+    var hold = document.getElementById("hold");
+    var holdtext = Number(hold.value);
+    var exhale = document.getElementById("exhale");
+    var exhaletext = Number(exhale.value);
+    var round = document.getElementById("Rounds");
+    var roundtext = Number(round);
+    var time = document.getElementById("time");
+    var second = document.getElementById("second");
+    var selectedInhale = inhale.options[inhale.selectedIndex].text;
+    var selectedHold = hold.options[hold.selectedIndex].text;
+    var selectedExhale = exhale.options[exhale.selectedIndex].text;
+    var selectedRound = round.options[round.selectedIndex].text;
+    hold.selectedIndex = selectedInhale*2*2-1
+    exhale.selectedIndex = selectedInhale*2-1
+    inhaletext = Number(selectedInhale)
+    holdtext = Number(selectedHold)
+    exhaletext = Number(selectedExhale)
+    roundtext = Number(selectedRound)
+    var add = (inhaletext)+(holdtext)+(exhaletext)
+    time.innerText = format(add * roundtext)*2
+    second.innerText = add*roundtext
+}
+function changeexhale(){
+    var inhale = document.getElementById("inhale");
+    var inhaletext = Number(inhale.value);
+    var hold = document.getElementById("hold");
+    var holdtext = Number(hold.value);
+    var exhale = document.getElementById("exhale");
+    var exhaletext = Number(exhale.value);
+    var round = document.getElementById("Rounds");
+    var roundtext = document.getElementById("roundtext");
+    var time = document.getElementById("time");
+    var second = document.getElementById("second");
+    var selectedInhale = inhale.options[inhale.selectedIndex].text;
+    var selectedHold = hold.options[hold.selectedIndex].text;
+    var selectedExhale = exhale.options[exhale.selectedIndex].text;
+    var selectedRound = round.options[round.selectedIndex].text;
+    // time.innerHTML = format((inhaletext)+(holdtext)+(exhaletext))
+    var add = (inhaletext)+(holdtext)+(exhaletext)
+    time.innerText = format(add*roundtext)*2
+    second.innerText = add*roundtext
+}
+
+function changeround(){
+  var inhale = document.getElementById("inhale");
+    var inhaletext = Number(inhale.value);
+    var hold = document.getElementById("hold");
+    var holdtext = Number(hold.value);
+    var exhale = document.getElementById("exhale");
+    var exhaletext = Number(exhale.value);
+    var round = document.getElementById("Rounds");
+    var roundtext = Number(round);
+    var time = document.getElementById("time");
+    var second = document.getElementById("second");
+    var selectedInhale = inhale.options[inhale.selectedIndex].text;
+    var selectedHold = hold.options[hold.selectedIndex].text;
+    var selectedExhale = exhale.options[exhale.selectedIndex].text;
+    var selectedRound = round.options[round.selectedIndex].text;
+    hold.selectedIndex = selectedInhale*2*2-1
+    exhale.selectedIndex = selectedInhale*2-1
+    inhaletext = Number(selectedInhale)
+    holdtext = Number(selectedHold)
+    exhaletext = Number(selectedExhale)
+    roundtext = Number(selectedRound)
+    var add = (inhaletext)+(holdtext)+(exhaletext)
+    time.innerText = format(add * roundtext*2)
+    second.innerText = add*roundtext*2
+}
+     window.onload = addListtoinhale(),addListtohold(),addListtoexhale(),addListtoround()
+
+// function start(){
+//   var round = document.getElementById("Rounds");
+//   var roundtext = Number(round);
+//   var selectedRound = round.options[round.selectedIndex].text;
+//   roundtext = Number(selectedRound)
+//   var i;
+function ready(){
+        textToAudio("Get ready ! Hold tight")
+        setTimeout(startInhaleleft, 10*1000)
+      }
+  function startInhaleleft() {
+      textToAudio("inhale from left")
+      var inhale = document.getElementById("inhale");
+      var inhaletext = Number(inhale.value);
+      var selectedInhale = inhale.options[inhale.selectedIndex].text;
+      inhaletext = Number(selectedInhale)
+      TIME_LIMIT = inhaletext
+      timePassed = 0
+      timeLeft = TIME_LIMIT
+      document.getElementById("base-timer-label").innerHTML = formatTime(
+          inhaletext
+        )
+      timerInterval = setInterval(() => {
+        timePassed = timePassed += 1;
+        timeLeft = TIME_LIMIT - timePassed;
+        document.getElementById("base-timer-label").innerHTML = formatTime(
+          timeLeft
+        );
+        setCircleDasharray();
+        setRemainingPathColor(timeLeft);
+        
+        if (timeLeft === 0) {
+          // textToAudio("inhale from left")
+          onTimesUp();
+          timeLeft = TIME_LIMIT
+          // var msg = ''
+          // textToAudio("inhale from right")
+          // window.speechSynthesis(msg)
+        }
+      }, 1000);
+      setTimeout(startHold, TIME_LIMIT*1000)}   
+
+      function startHold() {
+        textToAudio("Hold bredth and switch")
+        var hold = document.getElementById("hold");
+        var holdtext = Number(hold.value);
+        var selectedHold = hold.options[hold.selectedIndex].text;
+        holdtext = Number(selectedHold)
+        TIME_LIMIT = holdtext
+        timePassed = 0
+        timeLeft = TIME_LIMIT
+        timerInterval = setInterval(() => {
+          timePassed = timePassed += 1;
+          timeLeft = TIME_LIMIT - timePassed;
+          document.getElementById("base-timer-label").innerHTML = formatTime(
+            timeLeft
+          );
+          setCircleDasharray();
+          setRemainingPathColor(timeLeft);
+          
+          if (timeLeft === 0) {
+            onTimesUp();
+            timeLeft = TIME_LIMIT
+            // var msg = ''
+            // textToAudio("Hold bredth and switch")
+            // window.speechSynthesis(msg)
+          }
+        }, 1000);
+        setTimeout(startExhaleright, TIME_LIMIT*1000)
+      }
+      function startExhaleright() {
+        textToAudio("exhale from right")
+        var exhale = document.getElementById("exhale");
+        var exhaletext = Number(exhale.value);
+        var selectedHold = exhale.options[exhale.selectedIndex].text;
+        exhaletext = Number(selectedHold)
+        TIME_LIMIT = exhaletext
+        timePassed = 0
+        timeLeft = TIME_LIMIT
+        timerInterval = setInterval(() => {
+          timePassed = timePassed += 1;
+          timeLeft = TIME_LIMIT - timePassed;
+          document.getElementById("base-timer-label").innerHTML = formatTime(
+            timeLeft
+          );
+          setCircleDasharray();
+          setRemainingPathColor(timeLeft);
+          
+          if (timeLeft === 0) {
+            onTimesUp();
+            timeLeft = TIME_LIMIT
+            // var msg = ''
+            // textToAudio("exhale from right")
+            // window.speechSynthesis(msg)
+          }
+        }, 1000);
+        setTimeout(startInhaleright, TIME_LIMIT*1000+1000)
+      }
+
+      function startInhaleright() {
+
+      textToAudio("inhale from right")  
+      var inhale = document.getElementById("inhale");
+      var inhaletext = Number(inhale.value);
+      var selectedInhale = inhale.options[inhale.selectedIndex].text;
+      inhaletext = Number(selectedInhale)
+      TIME_LIMIT = inhaletext
+      timePassed = 0
+      timeLeft = TIME_LIMIT
+      document.getElementById("base-timer-label").innerHTML = formatTime(
+          inhaletext
+        )
+      timerInterval = setInterval(() => {
+        timePassed = timePassed += 1;
+        timeLeft = TIME_LIMIT - timePassed;
+        document.getElementById("base-timer-label").innerHTML = formatTime(
+          timeLeft
+        );
+        setCircleDasharray();
+        setRemainingPathColor(timeLeft);
+        
+        if (timeLeft === 0) {
+          // textToAudio("inhale from right")
+          onTimesUp();
+          timeLeft = TIME_LIMIT
+          // var msg = ''
+          // textToAudio("inhale from right")
+          // window.speechSynthesis(msg)
+        }
+      }, 1000);
+      setTimeout(startHold2, TIME_LIMIT*1000+1000)
+
+
+
+      function startHold2() {
+        textToAudio("Hold breath and switch")
+        var hold = document.getElementById("hold");
+        var holdtext = Number(hold.value);
+        var selectedHold = hold.options[hold.selectedIndex].text;
+        holdtext = Number(selectedHold)
+        TIME_LIMIT = holdtext
+        timePassed = 0
+        timeLeft = TIME_LIMIT
+        timerInterval = setInterval(() => {
+          timePassed = timePassed += 1;
+          timeLeft = TIME_LIMIT - timePassed;
+          document.getElementById("base-timer-label").innerHTML = formatTime(
+            timeLeft
+          );
+          setCircleDasharray();
+          setRemainingPathColor(timeLeft);
+          
+          if (timeLeft === 0) {
+            onTimesUp();
+            timeLeft = TIME_LIMIT
+            // var msg = ''
+            // textToAudio("Hold breath and switch")
+            // window.speechSynthesis(msg)
+          }
+        }, 1000);
+        setTimeout(startExhaleleft, TIME_LIMIT*1000+1000)
+      }
+
+      function startExhaleleft() {
+        textToAudio("exhale from left")
+        var exhale = document.getElementById("exhale");
+        var exhaletext = Number(exhale.value);
+        var selectedHold = exhale.options[exhale.selectedIndex].text;
+        exhaletext = Number(selectedHold)
+        TIME_LIMIT = exhaletext
+        timePassed = 0
+        timeLeft = TIME_LIMIT
+        timerInterval = setInterval(() => {
+          timePassed = timePassed += 1;
+          timeLeft = TIME_LIMIT - timePassed;
+          document.getElementById("base-timer-label").innerHTML = formatTime(
+            timeLeft
+          );
+          setCircleDasharray();
+          setRemainingPathColor(timeLeft);
+          
+          if (timeLeft === 0) {
+            onTimesUp();
+            timeLeft = TIME_LIMIT
+            // var msg = ''
+            
+            // window.speechSynthesis(msg)
+          }
+        }, 1000);
+        // setTimeout(startInhaleleft, TIME_LIMIT*1000+1000)
+      }
+      }
+        
+function start(){
+    ready()
+    // startInhaleright()
+    var round = document.getElementById("Rounds");
+    var roundtext = Number(round);
+    var selectedRound = round.options[round.selectedIndex].text;
+    roundtext = Number(selectedRound)
+    var i;
+    for (i = 0; i < roundtext-1; i++) {
+      setTimeout(startInhaleleft,parseInt(document.getElementById("second").innerText)*1000-2000)
+    }
+    onTimesUp()
+    // play()
+
+}
+function play(){
+  audio = document.getElementById('weldone')
+    audio.play()
+}
+</script>
+</html>
